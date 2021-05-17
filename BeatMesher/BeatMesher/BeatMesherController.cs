@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using BeatMesher.Configuration;
 using BS_Utils.Utilities;
 using UnityEngine;
@@ -10,6 +11,7 @@ namespace BeatMesher
     public class BeatMesherController : MonoBehaviour
     {
         public static BeatMesherController Instance { get; private set; }
+        public const string BeatMesherCaptureDir = "BeatMesherCaptures";
 
         private float recordingTime;
         private int captureFrame;
@@ -65,7 +67,7 @@ namespace BeatMesher
 
                     // Create faces bridging current and previous points
                     // NOTE: OBJ indices start at 1
-                    sw.WriteLine($"f {4 * (i - 1) + 1} {4 * (i - 1) + 1+ 1} {4 * i + 1 + 1} {4 * i + 1}");
+                    sw.WriteLine($"f {4 * (i - 1) + 1} {4 * (i - 1) + 1 + 1} {4 * i + 1 + 1} {4 * i + 1}");
                     sw.WriteLine($"f {4 * (i - 1) + 2 + 1} {4 * (i - 1) + 3 + 1} {4 * i + 3 + 1} {4 * i + 2 + 1}");
                 }
             }
@@ -85,7 +87,7 @@ namespace BeatMesher
             Plugin.Log?.Debug($"{name}: Awake()");
 
             captures = new List<Capture>();
-            Directory.CreateDirectory("BeatMesherCaptures");
+            Directory.CreateDirectory(BeatMesherCaptureDir);
         }
 
         private void Start()
@@ -116,9 +118,12 @@ namespace BeatMesher
                 leftSaber = null;
                 rightSaber = null;
 
-                var filename = "BeatMesherCaptures" + Path.DirectorySeparatorChar +
-                               DateTime.Now.ToString("s").Replace(":", "-") + "--" +
-                               levelString;
+                var timestamp = DateTime.Now.ToString("s").Replace(":", "-");
+                var safeLevelString =
+                    Path.GetInvalidFileNameChars()
+                        .Aggregate(levelString, (current, ch) => current.Replace(ch, '_'));
+                var filename = $"{BeatMesherCaptureDir}{Path.DirectorySeparatorChar}{timestamp}--{safeLevelString}";
+                
                 Plugin.Log?.Info($"Writing {captures.Count} captures to {Path.GetFullPath(filename)} as CSV and OBJ");
                 WriteCsv(captures, filename + ".csv");
                 WriteObj(captures, filename + ".obj", PluginConfig.Instance.ObjCaptureSpacing);
