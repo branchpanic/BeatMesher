@@ -9,8 +9,8 @@ namespace BeatMesher.Configuration
     {
         public static PluginConfig Instance { get; set; }
 
-        public virtual int FramesPerCapture { get; set; } = 15;
-        public virtual float ObjCaptureSpacing { get; set; } = 0.5f;
+        public virtual int FramesPerCapture { get; set; } = 3;
+        public virtual float ObjCaptureSpacing { get; set; } = 0.25f;
 
         /// <summary>
         /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
