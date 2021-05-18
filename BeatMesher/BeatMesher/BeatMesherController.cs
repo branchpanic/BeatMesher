@@ -16,7 +16,7 @@ namespace BeatMesher
         private float recordingTime;
         private int captureFrame;
 
-        private bool recording;
+        private bool recording, paused;
         private Saber leftSaber;
         private Saber rightSaber;
 
@@ -95,7 +95,8 @@ namespace BeatMesher
             BSEvents.gameSceneLoaded += () =>
             {
                 recording = true;
-
+                paused = false;
+    
                 Plugin.Log?.Info("Game scene loaded, starting to record");
 
                 var sm = FindObjectOfType<SaberManager>();
@@ -107,6 +108,18 @@ namespace BeatMesher
             BSEvents.levelSelected += (controller, level) =>
             {
                 levelString = $"{level.songName}-{level.songAuthorName}";
+            };
+
+            BSEvents.songPaused += () =>
+            {
+                Plugin.Log?.Info("Song paused");
+                paused = true;
+            };
+
+            BSEvents.songUnpaused += () =>
+            {
+                Plugin.Log?.Info("Song unpaused");
+                paused = false;
             };
 
             BSEvents.menuSceneLoaded += () =>
@@ -134,7 +147,7 @@ namespace BeatMesher
 
         private void LateUpdate()
         {
-            if (!recording) return;
+            if (!recording || paused) return;
 
             recordingTime += Time.deltaTime;
             captureFrame++;
